@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+
+  --color-paper: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-sunken: #eceef2;
+  --color-line: #dde1e7;
+  --color-line-strong: #c4cad3;
+  --color-ink: #18202b;
+  --color-slate: #5a6472;
+  --color-mute: #8790a0;
+
+  /* semantic: what the colour means, not decoration */
+  --color-brand: #3346c2;      /* the tracked brand */
+  --color-brand-soft: #e6e9fb;
+  --color-rival: #6e6589;      /* competitors */
+  --color-rival-soft: #ece9f3;
+  --color-official: #1d7a50;   /* official-domain citation */
+  --color-official-soft: #e1f2e9;
+  --color-third: #a66300;      /* third-party mention */
+  --color-third-soft: #fbefdc;
+  --color-fail: #b3402a;
+  --color-fail-soft: #f9e5e0;
+  --color-sim: #7a5c00;        /* simulated/demo data */
+  --color-sim-soft: #fff4c7;
+}
+
+html { color-scheme: light; }
+body { background: var(--color-paper); color: var(--color-ink); font-feature-settings: "ss01", "tnum"; }
+:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+@utility field { @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-mute focus:border-brand focus:outline-none; }
+@utility label { @apply mb-1 block text-sm font-medium text-ink; }
+@utility hint { @apply mt-1 text-xs text-slate; }
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors disabled:opacity-50; }
+@utility btn-primary { @apply btn bg-ink text-white hover:bg-brand; }
+@utility btn-secondary { @apply btn border border-line-strong bg-surface text-ink hover:border-ink; }
+@utility btn-danger { @apply btn border border-fail/40 bg-surface text-fail hover:bg-fail-soft; }
+@utility btn-ghost { @apply btn text-slate hover:bg-sunken hover:text-ink; }
+@utility panel { @apply rounded-lg border border-line bg-surface; }
+@layer components {
+.tbl { @apply w-full text-left text-sm; }
+.tbl th { @apply border-b border-line px-3 py-2 text-xs font-medium text-slate; }
+.tbl td { @apply border-b border-line/70 px-3 py-2.5 align-top; }
+.tbl tr:last-child td { @apply border-b-0; }
+}
+@utility link { @apply text-brand underline-offset-2 hover:underline; }
+
+.evidence { font-family: var(--font-serif); font-size: 1.0625rem; line-height: 1.7; }
+.evidence mark.m-brand { background: var(--color-brand-soft); color: var(--color-brand); border-bottom: 2px solid var(--color-brand); padding: 0 1px; }
+.evidence mark.m-rival { background: var(--color-rival-soft); color: inherit; border-bottom: 1px dashed var(--color-rival); }
+.evidence mark.m-product { background: transparent; border-bottom: 2px dotted var(--color-brand); color: inherit; }
+.evidence sup.cite { font-family: var(--font-sans); font-size: 0.68rem; font-weight: 600; padding: 0 3px; border-radius: 3px; margin-left: 1px; }
