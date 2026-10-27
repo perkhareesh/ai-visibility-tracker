@@ -312,3 +312,23 @@ export function startWorkerLoop() {
   };
   void loop();
 }
+
+/**
+ * Process runnable jobs until the queue is empty or the time budget runs out.
+ * Used on serverless hosts (Vercel) where no long-lived worker exists: called
+ * after a run is started, while a run page is open, and from a daily cron.
+ * Jobs left over stay queued and are picked up by the next call.
+ */
+export async function drainFor(budgetMs: number) {
+  const until = Date.now() + budgetMs;
+  let processed = 0;
+  while (Date.now() < until) {
+    const r = await workerTick(3);
+    if (!r.length) break;
+    processed += r.length;
+  }
+  return processed;
+}
+
+/** True when the app runs without a persistent worker process. */
+export const serverlessWorker = () => !!process.env.VERCEL || process.env.WORKER_MODE === "request";

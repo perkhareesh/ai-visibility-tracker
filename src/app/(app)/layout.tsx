@@ -3,6 +3,9 @@ import { logoutAction } from "@/app/actions";
 import { Nav } from "@/components/nav";
 import { requireCtx } from "@/server/session";
 
+// Lets server actions and pages that process jobs run up to Vercel Hobby's 300s limit.
+export const maxDuration = 300;
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireCtx();
   return (

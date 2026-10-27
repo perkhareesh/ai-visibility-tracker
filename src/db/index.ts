@@ -10,7 +10,7 @@ export function getPool(): Pool {
   if (!globalForDb.__aivtPool) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is not set");
-    globalForDb.__aivtPool = new Pool({ connectionString: url, max: 10 });
+    globalForDb.__aivtPool = new Pool({ connectionString: url, max: Number(process.env.DATABASE_POOL_MAX || (process.env.VERCEL ? 3 : 10)), idleTimeoutMillis: 10_000 });
   }
   return globalForDb.__aivtPool;
 }

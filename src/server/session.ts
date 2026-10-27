@@ -10,7 +10,7 @@ export async function setSessionCookie(token: string) {
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.COOKIE_SECURE === "true",
+    secure: process.env.COOKIE_SECURE === "true" || process.env.VERCEL === "1",
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
   });

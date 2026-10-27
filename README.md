@@ -47,6 +47,26 @@ npm run test:integration
 npm run typecheck
 ```
 
+## Deploying to Vercel
+
+Vercel functions can't keep a worker running in the background, so on Vercel the app processes jobs in these places instead:
+
+- right after you start or retry a run (in the background, up to about 4 minutes)
+- whenever a run page is open and nothing is processing that run (the page refreshes every few seconds)
+- once a day from Vercel Cron (`vercel.json`), calling `/api/worker/tick`; this also starts scheduled runs
+
+On the Hobby plan, cron runs at most once a day, so daily, weekly and monthly schedules start within that daily window.
+
+Setup:
+
+1. Push the repo to GitHub and import it in Vercel (framework: Next.js, no build settings to change).
+2. Add a Postgres database: Vercel dashboard > Storage > Create > Neon (or any Postgres). Use the **pooled** connection string as `DATABASE_URL`.
+3. Environment variables: `DATABASE_URL`, `CRON_SECRET` (any long random string), optionally `OPENAI_API_KEY` and `OPENAI_MODEL`.
+4. Deploy. `npm run build` runs the database migrations automatically on Vercel (`scripts/build-migrate.ts`).
+5. Open the site, create a workspace, and use Settings > "Create a demo workspace" to try it without an API key.
+
+Preview deployments run migrations against whichever database their `DATABASE_URL` points to; give previews a separate database if you use them.
+
 ## Environment variables
 
 | Variable | Default | Purpose |
@@ -60,7 +80,10 @@ npm run typecheck
 | `PROVIDER_RATE_LIMIT_PER_MIN` | `20` | Provider calls per minute per workspace (excess jobs are deferred, not failed) |
 | `WORKER_INLINE` | `true` | Run the worker in the Next.js process |
 | `WORKER_POLL_MS` | `2000` | Worker poll interval |
-| `COOKIE_SECURE` | `false` | Set `true` behind HTTPS |
+| `COOKIE_SECURE` | `false` | Set `true` behind HTTPS (always on when running on Vercel) |
+| `CRON_SECRET` | empty | Required for `/api/worker/tick` (Vercel Cron sends it) |
+| `WORKER_MODE` | empty | `request` = serverless-style job processing (automatic on Vercel) |
+| `DATABASE_POOL_MAX` | 10 (3 on Vercel) | Postgres connections per instance |
 | `DEMO_EMAIL`, `DEMO_PASSWORD` | demo values | Used by `npm run db:seed-demo` |
 
 ## Provider setup
@@ -128,7 +151,7 @@ Server-side session checks on every page, action and route; workspace scoping in
 
 - The live OpenAI integration is implemented against the documented Responses API and covered by parser and HTTP-mapping tests with a stubbed `fetch`, but has not been exercised against the real API in this environment (no key available).
 - Mention, recommendation and sentiment detection are rule-based and English-oriented. They are deterministic and versioned, and labels can be corrected manually, but they will miss paraphrases and can misread sarcasm.
-- Rate limiting is in-memory per process; use a shared store when running several web instances.
+- Rate limiting is in-memory per process; use a shared store when running several web instances. On Vercel each function instance keeps its own counters, so limits are approximate.
 - Dates are displayed and filtered in UTC.
 - Teams: workspaces support multiple members in the schema, but there is no invite UI yet.
 - Fonts load from Google Fonts at runtime; system fonts are used if blocked.

@@ -258,3 +258,17 @@ describe("tracking pipeline", () => {
     expect(n).toBe(0);
   });
 });
+
+describe("serverless worker", () => {
+  it("drainFor processes queued jobs within a time budget", async () => {
+    const { ctx } = await makeUser("s@x.io");
+    const b = await createBrand(ctx, brandInput);
+    await createQuery(ctx, { brandId: b.id, text: "Best CRM tools in India" });
+    const { run } = await startRun(ctx, { brandId: b.id, provider: "mock-live", model: "mock-1", idempotencyKey: idem() });
+    const { drainFor } = await import("@/server/worker");
+    expect(await drainFor(10_000)).toBe(1);
+    const [r] = await getDb().select().from(trackingRuns).where(eq(trackingRuns.id, run.id));
+    expect(r.status).toBe("completed");
+    expect(await drainFor(10_000)).toBe(0);
+  });
+});

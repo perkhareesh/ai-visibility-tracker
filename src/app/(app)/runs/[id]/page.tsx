@@ -1,5 +1,7 @@
 import { orNotFound } from "@/server/not-found";
 import Link from "next/link";
+import { after } from "next/server";
+import { drainFor, serverlessWorker } from "@/server/worker";
 import { randomUUID } from "node:crypto";
 import { cancelRunAction, retryRunAction } from "@/app/actions";
 import { AutoRefresh } from "@/components/auto-refresh";
@@ -19,6 +21,8 @@ export default async function RunDetail({ params, searchParams }: { params: Prom
   const [snaps, records] = await Promise.all([listSnapshotsForRun(ctx, id), loadExecRecords(ctx, { runIds: [id] })]);
   const m = computeMetrics(records);
   const inFlight = ["queued", "running"].includes(run.status);
+  // Serverless: if nothing is currently processing this run, resume it in the background.
+  if (inFlight && serverlessWorker() && !jobs.some((j) => j.job.status === "running")) after(() => drainFor(240_000).then(() => undefined));
   const bySnap = new Map(snaps.map((s) => [s.s.queryId, s]));
 
   return (

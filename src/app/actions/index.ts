@@ -2,6 +2,8 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { drainFor, serverlessWorker } from "@/server/worker";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { getDb } from "@/db";
@@ -21,6 +23,11 @@ import { errorMessage, safeBack, str, withParam } from "./util";
 async function clientKey() {
   const h = await headers();
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
+}
+
+/** On serverless hosts, process queued jobs after the response is sent. */
+function kickWorker() {
+  if (serverlessWorker()) after(() => drainFor(240_000).then(() => undefined));
 }
 
 // ---------- Auth ----------
@@ -255,6 +262,7 @@ export async function startRunAction(fd: FormData) {
     err = errorMessage(e);
   }
   if (err) redirect(withParam(safeBack(str(fd, "back"), "/runs/new"), "error", err));
+  kickWorker();
   redirect(`/runs/${runId}`);
 }
 
@@ -269,6 +277,7 @@ export async function retryRunAction(fd: FormData) {
     err = errorMessage(e);
   }
   if (err) redirect(withParam(`/runs/${id}`, "error", err));
+  kickWorker();
   redirect(`/runs/${newId}?notice=${encodeURIComponent("Retry run queued for the failed queries.")}`);
 }
 
