@@ -62,7 +62,7 @@ Setup:
 1. Push the repo to GitHub and import it in Vercel (framework: Next.js, no build settings to change).
 2. Add a Postgres database: Vercel dashboard > Storage > Create > Neon (or any Postgres). Use the **pooled** connection string as `DATABASE_URL`.
 3. Environment variables: `DATABASE_URL`, `CRON_SECRET` (any long random string), optionally `OPENAI_API_KEY` and `OPENAI_MODEL`.
-4. Deploy. `npm run build` runs the database migrations automatically on Vercel (`scripts/build-migrate.ts`).
+4. Deploy. `npm run build` runs the database migrations automatically on Vercel (`scripts/build-migrate.mjs`).
 5. Open the site, create a workspace, and use Settings > "Create a demo workspace" to try it without an API key.
 
 Preview deployments run migrations against whichever database their `DATABASE_URL` points to; give previews a separate database if you use them.
